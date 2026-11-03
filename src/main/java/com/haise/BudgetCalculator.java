@@ -7,6 +7,10 @@ import java.util.EnumMap;
 import java.util.Map;
 import java.util.List;
 
+import org.springframework.stereotype.Component;
+
+@Component
+
 public class BudgetCalculator {
     private static final BigDecimal ONE_HUNDRED = new BigDecimal("100");
     public BigDecimal calculateTotal(List<Expense> expenses) {
@@ -16,7 +20,6 @@ public class BudgetCalculator {
         }
         return total;
     }
-
     public Map<Category, BigDecimal> calculateTotalByCategory(List<Expense> expenses) {
         Map<Category, BigDecimal> totalByCategory = new EnumMap<>(Category.class);
         for (Expense expense : expenses) {
@@ -25,7 +28,6 @@ public class BudgetCalculator {
         }
         return totalByCategory;
     }
-
     public BigDecimal calculateBalance(BigDecimal income, List<Expense> expenses) {
         return income.subtract(calculateTotal(expenses));
     }

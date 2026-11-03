@@ -1,0 +1,86 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1">
+    <title>AI Expenses</title>
+    <style>
+        body { font-family: sans-serif; max-width: 600px; margin: 2rem auto; padding: 0 1rem; }
+        label, button, select, input { margin: 0.3rem 0; font-size: 1rem; }
+        input, select { padding: 0.4rem; }
+        ul { padding-left: 1.2rem; }
+        pre { white-space: pre-wrap; background: #34aea3; padding: 1rem; border-radius: 6px; }
+        .error { color: #9c113e; }
+        button { padding: 0.5rem 1rem; cursor: pointer; }
+    </style>
+</head>
+<body>
+<h1>AI Budget Tracker</h1>
+
+<label>Monthly income (EUR):<br>
+    <input type="number" id="income" step="1" min="0">
+</label>
+
+<h2>Expenses</h2>
+<select id="category">
+    <option value="RENT">Rent</option>
+    <option value="GROCERIES">Groceries</option>
+    <option value="CAFE">Cafe</option>
+    <option value="TRANSPORT">Transport</option>
+</select>
+<input type="number" id="amount" step="0.01" min="0.01" placeholder="Amount">
+<button onclick="addExpense()">Add</button>
+<ul id="list"></ul>
+
+<button onclick="send('/api/summary')">Calculate</button>
+<button onclick="send('/api/analysis')">AI analysis</button>
+
+<p id="error" class="error"></p>
+<h2>Summary</h2>
+<pre id="summary"></pre>
+<h2>AI analysis</h2>
+<pre id="analysis"></pre>
+
+<script>
+    const expenses = [];
+
+    function addExpense() {
+        const category = document.getElementById("category").value;
+        const amount = parseFloat(document.getElementById("amount").value);
+        if (!amount || amount <= 0) {
+            document.getElementById("error").textContent = "Please enter a valid amount.";
+            return;
+        }
+        document.getElementById("error").textContent = "";
+        expenses.push({ category, amount });
+        const li = document.createElement("li");
+        li.textContent = category + ": " + amount + " EUR";
+        document.getElementById("list").appendChild(li);
+        document.getElementById("amount").value = "";
+    }
+
+    async function send(url) {
+        const income = parseFloat(document.getElementById("income").value);
+        document.getElementById("error").textContent = "";
+        document.getElementById("summary").textContent = "";
+        document.getElementById("analysis").textContent = "";
+        try {
+            const response = await fetch(url, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({ income, expenses })
+            });
+            const data = await response.json();
+            if (!response.ok) {
+                document.getElementById("error").textContent = data.error || "Unknown error";
+                return;
+            }
+            document.getElementById("summary").textContent = data.summary || "";
+            document.getElementById("analysis").textContent = data.analysis || "";
+        } catch (e) {
+            document.getElementById("error").textContent = "Server not reachable.";
+        }
+    }
+</script>
+</body>
+</html>

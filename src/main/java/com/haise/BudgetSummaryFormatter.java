@@ -4,6 +4,10 @@ import java.math.BigDecimal;
 import java.util.List;
 import java.util.Map;
 
+import org.springframework.stereotype.Component;
+
+@Component
+
 public class BudgetSummaryFormatter {
     private final BudgetCalculator calculator;
     public BudgetSummaryFormatter(BudgetCalculator calculator) {

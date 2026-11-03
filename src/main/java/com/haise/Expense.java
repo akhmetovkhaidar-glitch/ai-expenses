@@ -1,6 +1,6 @@
 package com.haise;
 
-import javax.naming.spi.ObjectFactory;
+import java.math.RoundingMode;
 import java.math.BigDecimal;
 import java.util.Objects;
 
@@ -11,6 +11,10 @@ import java.util.Objects;
             if (amount.signum() <= 0) {
                 throw new IllegalArgumentException("Amount must be greater than zero!");
             }
+            if (amount.stripTrailingZeros().scale() > 2) {
+                throw new IllegalArgumentException("Amount can have at most 2 decimal places!");
+            }
+            amount = amount.setScale(2, RoundingMode.HALF_UP);
         }
     }
 
