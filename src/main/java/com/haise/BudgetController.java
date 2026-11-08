@@ -3,13 +3,18 @@ package com.haise;
 import org.springframework.http.HttpStatus;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.*;
-
+import java.math.BigDecimal;
 import java.io.IOException;
+import java.util.List;
 import java.util.Map;
 
 @RestController
 @RequestMapping("/api")
 public class BudgetController {
+    public record IncomeRequest(BigDecimal income) {}
+    private List<Expense> loadExpenses() {
+        return repository.findAll().stream().map(ExpenseEntity::toExpense).toList();
+    }
 
     private static final String AI_INSTRUCTION = """
             You are a personal budget assistant.
@@ -24,18 +29,20 @@ public class BudgetController {
             """;
     private final BudgetSummaryFormatter formatter;
     private final GeminiClient geminiClient;
-    public BudgetController(BudgetSummaryFormatter formatter, GeminiClient geminiClient) {
+    private final ExpenseRepository repository;
+    public BudgetController(BudgetSummaryFormatter formatter, GeminiClient geminiClient, ExpenseRepository repository) {
         this.formatter = formatter;
         this.geminiClient = geminiClient;
+        this.repository = repository;
     }
     @PostMapping("/summary")
-    public Map<String, String> summary(@RequestBody BudgetRequest request) {
-        String summary = formatter.createSummary(request.income(), request.expenses());
+    public Map<String, String> summary(@RequestBody IncomeRequest request) {
+        String summary = formatter.createSummary(request.income(), loadExpenses());
         return Map.of("summary", summary);
     }
     @PostMapping("/analysis")
-    public ResponseEntity<Map<String, String>> analysis(@RequestBody BudgetRequest request) {
-        String summary = formatter.createSummary(request.income(), request.expenses());
+    public ResponseEntity<Map<String, String>> analysis(@RequestBody IncomeRequest request) {
+        String summary = formatter.createSummary(request.income(), loadExpenses());
         try {
             String analysis = geminiClient.ask(AI_INSTRUCTION, summary);
             return ResponseEntity.ok(Map.of("summary", summary, "analysis", analysis));

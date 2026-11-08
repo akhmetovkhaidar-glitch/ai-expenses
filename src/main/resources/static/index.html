@@ -42,45 +42,78 @@
 <pre id="analysis"></pre>
 
 <script>
-    const expenses = [];
-
-    function addExpense() {
-        const category = document.getElementById("category").value;
-        const amount = parseFloat(document.getElementById("amount").value);
-        if (!amount || amount <= 0) {
-            document.getElementById("error").textContent = "Please enter a valid amount.";
+    async function send(url) {
+        if (!income || income <= 0) {
+            error.textContent = "Please enter your monthly income.";
             return;
         }
-        document.getElementById("error").textContent = "";
-        expenses.push({ category, amount });
-        const li = document.createElement("li");
-        li.textContent = category + ": " + amount + " EUR";
-        document.getElementById("list").appendChild(li);
-        document.getElementById("amount").value = "";
-    }
-
-    async function send(url) {
         const income = parseFloat(document.getElementById("income").value);
-        document.getElementById("error").textContent = "";
+        const error = document.getElementById("error");
+        error.textContent = "";
         document.getElementById("summary").textContent = "";
         document.getElementById("analysis").textContent = "";
         try {
             const response = await fetch(url, {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ income, expenses })
+                body: JSON.stringify({ income })
             });
             const data = await response.json();
             if (!response.ok) {
-                document.getElementById("error").textContent = data.error || "Unknown error";
+                error.textContent = data.error || "Unknown error";
                 return;
             }
             document.getElementById("summary").textContent = data.summary || "";
             document.getElementById("analysis").textContent = data.analysis || "";
         } catch (e) {
-            document.getElementById("error").textContent = "Server not reachable.";
+            error.textContent = "Server not reachable.";
         }
     }
+    async function loadExpenses() {
+        const response = await fetch("/api/expenses");
+        const data = await response.json();
+        const list = document.getElementById("list");
+        list.innerHTML = "";
+        for (const e of data) {
+            const li = document.createElement("li");
+            li.textContent = e.category + ": " + e.amount + " EUR ";
+            const btn = document.createElement("button");
+            btn.textContent = "Delete";
+            btn.onclick = () => deleteExpense(e.id);
+            li.appendChild(btn);
+            list.appendChild(li);
+        }
+    }
+
+    async function addExpense() {
+        const category = document.getElementById("category").value;
+        const amount = parseFloat(document.getElementById("amount").value);
+        const error = document.getElementById("error");
+        if (!amount || amount <= 0) {
+            error.textContent = "Please enter a valid amount.";
+            return;
+        }
+        error.textContent = "";
+        const response = await fetch("/api/expenses", {
+            method: "POST",
+            headers: { "Content-Type": "application/json" },
+            body: JSON.stringify({ category, amount })
+        });
+        if (!response.ok) {
+            const data = await response.json();
+            error.textContent = data.error || "Unknown error";
+            return;
+        }
+        document.getElementById("amount").value = "";
+        loadExpenses();
+    }
+
+    async function deleteExpense(id) {
+        await fetch("/api/expenses/" + id, { method: "DELETE" });
+        loadExpenses();
+    }
+
+    loadExpenses();
 </script>
 </body>
 </html>
