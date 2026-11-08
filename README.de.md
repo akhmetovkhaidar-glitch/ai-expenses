@@ -85,9 +85,6 @@ Kategorien: RENT, GROCERIES, CAFE, TRANSPORT. Ungültige Eingaben liefern Status
 - Die Tabelle wird von Hibernate erstellt. In einem echten Projekt würde man Migrationen verwenden.
 - Die Tipps der KI sind allgemeine Vorschläge, keine Finanzberatung.
 
-## Hinweis zur Entwicklung
-
-Ich habe beim Bauen einen KI-Assistenten benutzt (Erklärungen, Fehlersuche, Code-Review). Ich habe den Code durchgearbeitet und kann erklären, wie er funktioniert.
 
 ## Autor
 
