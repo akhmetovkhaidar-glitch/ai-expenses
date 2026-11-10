@@ -43,13 +43,13 @@
 
 <script>
     async function send(url) {
+        const income = parseFloat(document.getElementById("income").value);
+        const error = document.getElementById("error");
+        error.textContent = "";
         if (!income || income <= 0) {
             error.textContent = "Please enter your monthly income.";
             return;
         }
-        const income = parseFloat(document.getElementById("income").value);
-        const error = document.getElementById("error");
-        error.textContent = "";
         document.getElementById("summary").textContent = "";
         document.getElementById("analysis").textContent = "";
         try {
@@ -69,6 +69,7 @@
             error.textContent = "Server not reachable.";
         }
     }
+
     async function loadExpenses() {
         const response = await fetch("/api/expenses");
         const data = await response.json();
